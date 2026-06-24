@@ -1,6 +1,6 @@
-# [Geometric and Information Compression of Representations in Deep Learning]
+# Geometric and Information Compression of Representations in Deep Learning
 
-Code for the paper: [Geometric and Information Compression of Representations in Deep Learning]([https://arxiv.org/pdf/2606.21593])
+Code for the paper: [Geometric and Information Compression of Representations in Deep Learning](https://arxiv.org/pdf/2606.21593)
 
 Checkpoints: [https://doi.org/10.17877/RCTRUST-2026-DWMJTZ]
 
@@ -22,16 +22,16 @@ The datasets used in the paper are standard public datasets referenced in the ma
 ```text
 .
 ├── ceb/
-│   ├── run.sh - running training script train.py for the set of random seeds
-│   ├── visualize_training.py - computes NC for the particular run and visualizes training curves
-│   ├── correlation_plots.py - aggregates runs into the correlation (MI-NC and others) plots
-│   ├── correlation_coefs.py - computes correlation coefficients reported in the manuscript
+│   ├── run.sh # running training script train.py for the set of random seeds
+│   ├── visualize_training.py # computes NC for the particular run and visualizes training curves
+│   ├── correlation_plots.py # aggregates runs into the correlation (MI-NC and others) plots
+│   ├── correlation_coefs.py # computes correlation coefficients reported in the manuscript
 ├── gaus_dropout/
-│   ├── train_with_NC.py - training a neural network with NC regularizer
-│   ├── process_step1_mi_nc.py - compute MI and NC for the saved checkpoints
-│   ├── process_step2_plotting.py - plot the training curves and correlations in one setup
-│   ├── process_step3_correlation_coefs.py - compute correlation coefficients reported in the paper
-├── toy_example.ipynb - computation and visualization used as theoretical explanation for mismatch between MI compression and NC
+│   ├── train_with_NC.py # training a neural network with NC regularizer
+│   ├── process_step1_mi_nc.py # compute MI and NC for the saved checkpoints
+│   ├── process_step2_plotting.py # plot the training curves and correlations in one setup
+│   ├── process_step3_correlation_coefs.py # compute correlation coefficients reported in the paper
+├── toy_example.ipynb # computation and visualization used as theoretical explanation for mismatch between MI compression and NC
 ```
 Checkpoints of the training have to be placed in "checkpoints" folder in gaus_dropout - the scripts are expecting to find it there and the training script saves runs there.
 
