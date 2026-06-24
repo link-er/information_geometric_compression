@@ -6,15 +6,12 @@ import matplotlib.ticker as ticker
 import pickle
 from sklearn.preprocessing import MinMaxScaler
 from pathlib import Path
-from sklearn.metrics import silhouette_score
-from sklearn.decomposition import PCA
 
 from datasets.datasets import get_dataloaders
 from models import *
 
 if __name__ == "__main__":
     EXP_PATH_parent = Path('checkpoints/wrn28-4_cifar10')
-    BINS = 5
 
     exp_data = []
     for exp in EXP_PATH_parent.iterdir():
@@ -93,7 +90,7 @@ if __name__ == "__main__":
                 test_class_inds[c] += ((d[1]==c).nonzero().flatten()+ind*batch_size).tolist()
         test_reprs = np.array(test_reprs)
 
-        # (g1) Compute neural collapse geometric characteristic
+        # Compute neural collapse geometric characteristic
         # cdnv(Q1, Q2) = (Var(Q1) + Var(Q2))/(2|mu(Q1) - mu(Q2)|^2)
         # for final sets we take the penultimate representation f, for each class find mean and E[|f - mu|^2] (var)
         # tends to 0 when collapse is happening
@@ -125,34 +122,6 @@ if __name__ == "__main__":
                 test_cdnvs.append((var1 + var2)/(2*np.linalg.norm(mu1 - mu2)**2))
         print("Avg test CDNV", np.mean(test_cdnvs))
 
-        # (g2) Compute entropy of binned representation on the dimensionality reduced space
-        # 5 components should be good represented in data
-        pca = PCA(n_components=5)
-        train_reprs_red = pca.fit_transform(train_reprs)
-        binned_repr = np.floor(BINS * MinMaxScaler().fit_transform(train_reprs_red))
-        value, counts = np.unique(binned_repr, return_counts=True, axis=0)
-        print("PCA explained variance", pca.explained_variance_)
-        print("Unique representations after PCA and binning", len(counts))
-        norm_counts = counts / counts.sum()
-        train_ent = -(norm_counts * np.log(norm_counts)).sum()
-        print("Binned entropy on train data", train_ent)
-        #use the same PCA as in train
-        test_reprs_red = pca.transform(test_reprs)
-        binned_repr = np.floor(BINS * MinMaxScaler().fit_transform(test_reprs_red))
-        value, counts = np.unique(binned_repr, return_counts=True, axis=0)
-        norm_counts = counts / counts.sum()
-        test_ent = -(norm_counts * np.log(norm_counts)).sum()
-        print("Binned entropy on test data", test_ent)
-
-        # (g3) Silhouette score on reduced dimensionality representations
-        # The best value is 1 and the worst value is -1.
-        # Values near 0 indicate overlapping clusters.
-        # Negative values generally indicate that a sample has been assigned to the wrong cluster, as a different cluster is more similar.
-        train_silh_sc = silhouette_score(train_reprs_red, train_labels)
-        print("Silhouette score on train data", train_silh_sc)
-        test_silh_sc = silhouette_score(test_reprs_red, test_labels)
-        print("Silhouette score on test data", test_silh_sc)
-
         #the neural collapse for backwards encoder; we simply need one hot encoded version from each class and send it through the weights to obtain mean and variance
         backw_means, backw_vars = [], []
         for c in range(num_classes):
@@ -173,7 +142,7 @@ if __name__ == "__main__":
             'test_avg_acc': test_history['acc'][-1],
             'train_class_loss': train_history['class_loss'][-1],
             'test_class_loss': test_history['class_loss'][-1],
-            # actually it is conditional mutual information, conditioned on Y
+            # conditional mutual information, conditioned on Y
             'train_IXZ': train_history['I(X;Z|Y)'][-1],
             'test_IXZ': test_history['I(X;Z|Y)'][-1],
             'train_IYZ': train_history['I(Z;Y)_bound'][-1],
@@ -181,9 +150,5 @@ if __name__ == "__main__":
             # geometric characteristics
             'train_NC_g1': np.mean(train_cdnvs),
             'test_NC_g1': np.mean(test_cdnvs),
-            'train_H_bin_Z_g2': train_ent,
-            'test_H_bin_Z_g2': test_ent,
-            'train_silh_sc': train_silh_sc,
-            'test_silh_sc': test_silh_sc,
             'backward_NC': np.mean(backw_cdnvs)
         }, open(EXP_PATH/"characteristics.pkl", "wb"))
